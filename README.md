@@ -22,13 +22,30 @@ local window = LumaUI:CreateWindow({ Title = "My Game" })
 local playerTab = window:CreateTab("Player")
 
 
-playerTab:CreateToggle({ Name = "God Mode", Default = false, Callback = print })
-playerTab:CreateSlider({ Name = "Speed", Min = 0, Max = 500, Default = 50, Callback = print })
-playerTab:CreateButton({ Name = "Reset", Callback = function() print("Reset clicked") end })
-playerTab:CreateTextBox({ Name = "Name", Default = "Player", Callback = print })
-playerTab:CreateColorPicker({ Name = "Accent Color", Default = Color3.fromRGB(118, 255, 123), Callback = print })
-playerTab:CreateDropdown({ Name = "Options", Options = {"A", "B", "C"}, Callback = print })
-playerTab:CreateNotification({ Text = "Hello World!", Duration = 3 })
+playerTab:CreateToggle({
+    Name = "God Mode",
+    Default = false,
+    Callback = function(value)
+        print("God Mode:", value)
+    end
+})
+
+playerTab:CreateSlider({
+    Name = "Speed",
+    Min = 0,
+    Max = 500,
+    Default = 50,
+    Callback = function(val)
+        print("Speed:", val)
+    end
+})
+
+playerTab:CreateButton({
+    Name = "Reset",
+    Callback = function()
+        print("Reset clicked")
+    end
+})
 ```
 
 
