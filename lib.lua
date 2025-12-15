@@ -1,12 +1,12 @@
 local LumaUI = {}
 
+local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
 
-local function createCorner(r, p)
+local function corner(r,p)
     local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, r)
+    c.CornerRadius = UDim.new(0,r)
     c.Parent = p
 end
 
@@ -16,74 +16,74 @@ function LumaUI:CreateWindow(cfg)
     gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 
     local main = Instance.new("Frame")
-    main.Size = UDim2.fromOffset(520, 360)
-    main.Position = UDim2.fromScale(0.5, 0.5)
-    main.AnchorPoint = Vector2.new(0.5, 0.5)
-    main.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+    main.Size = UDim2.fromOffset(520,360)
+    main.Position = UDim2.fromScale(0.5,0.5)
+    main.AnchorPoint = Vector2.new(0.5,0.5)
+    main.BackgroundColor3 = Color3.fromRGB(25,25,25)
     main.Parent = gui
-    createCorner(12, main)
+    corner(12,main)
 
     local top = Instance.new("Frame")
-    top.Size = UDim2.new(1, 0, 0, 42)
-    top.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    top.Size = UDim2.new(1,0,0,44)
+    top.BackgroundColor3 = Color3.fromRGB(30,30,30)
     top.Parent = main
-    createCorner(12, top)
+    corner(12,top)
 
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -16, 1, 0)
-    title.Position = UDim2.fromOffset(16, 0)
+    title.Size = UDim2.new(1,-20,1,0)
+    title.Position = UDim2.fromOffset(20,0)
     title.BackgroundTransparency = 1
     title.TextXAlignment = Left
     title.Text = cfg.Title or "LumaUI"
-    title.TextSize = 20
     title.Font = Enum.Font.GothamBold
+    title.TextSize = 18
     title.TextColor3 = Color3.fromRGB(118,255,123)
     title.Parent = top
 
-    local tabsBar = Instance.new("Frame")
-    tabsBar.Size = UDim2.new(0, 140, 1, -42)
-    tabsBar.Position = UDim2.fromOffset(0, 42)
-    tabsBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    tabsBar.Parent = main
+    local tabs = Instance.new("Frame")
+    tabs.Size = UDim2.new(0,140,1,-44)
+    tabs.Position = UDim2.fromOffset(0,44)
+    tabs.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    tabs.Parent = main
 
     local pages = Instance.new("Frame")
-    pages.Size = UDim2.new(1, -140, 1, -42)
-    pages.Position = UDim2.fromOffset(140, 42)
+    pages.Size = UDim2.new(1,-140,1,-44)
+    pages.Position = UDim2.fromOffset(140,44)
     pages.BackgroundTransparency = 1
     pages.Parent = main
 
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 6)
-    layout.Parent = tabsBar
+    local tabLayout = Instance.new("UIListLayout")
+    tabLayout.Padding = UDim.new(0,6)
+    tabLayout.Parent = tabs
 
     local window = {}
 
     function window:CreateTab(name)
         local tabBtn = Instance.new("TextButton")
-        tabBtn.Size = UDim2.new(1, -12, 0, 36)
-        tabBtn.Position = UDim2.fromOffset(6, 0)
-        tabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        tabBtn.Size = UDim2.new(1,-12,0,36)
+        tabBtn.Position = UDim2.fromOffset(6,0)
+        tabBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
         tabBtn.Text = name
         tabBtn.Font = Enum.Font.Gotham
         tabBtn.TextSize = 14
-        tabBtn.TextColor3 = Color3.fromRGB(220,220,220)
-        tabBtn.Parent = tabsBar
-        createCorner(8, tabBtn)
+        tabBtn.TextColor3 = Color3.fromRGB(230,230,230)
+        tabBtn.Parent = tabs
+        corner(8,tabBtn)
 
         local page = Instance.new("ScrollingFrame")
-        page.Size = UDim2.new(1, -16, 1, -16)
-        page.Position = UDim2.fromOffset(8, 8)
-        page.CanvasSize = UDim2.new(0,0,0,0)
+        page.Size = UDim2.new(1,-16,1,-16)
+        page.Position = UDim2.fromOffset(8,8)
         page.ScrollBarImageTransparency = 1
+        page.CanvasSize = UDim2.new(0,0,0,0)
         page.Visible = false
         page.Parent = pages
 
-        local pLayout = Instance.new("UIListLayout")
-        pLayout.Padding = UDim.new(0, 8)
-        pLayout.Parent = page
+        local layout = Instance.new("UIListLayout")
+        layout.Padding = UDim.new(0,8)
+        layout.Parent = page
 
-        pLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            page.CanvasSize = UDim2.new(0,0,0,pLayout.AbsoluteContentSize.Y+8)
+        layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            page.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 10)
         end)
 
         tabBtn.MouseButton1Click:Connect(function()
@@ -97,14 +97,14 @@ function LumaUI:CreateWindow(cfg)
 
         function tab:CreateToggle(o)
             local b = Instance.new("TextButton")
-            b.Size = UDim2.new(1, 0, 0, 42)
+            b.Size = UDim2.new(1,0,0,42)
             b.BackgroundColor3 = Color3.fromRGB(32,32,32)
             b.Text = ""
             b.Parent = page
-            createCorner(10, b)
+            corner(10,b)
 
             local t = Instance.new("TextLabel")
-            t.Size = UDim2.new(1, -60, 1, 0)
+            t.Size = UDim2.new(1,-20,1,0)
             t.Position = UDim2.fromOffset(16,0)
             t.BackgroundTransparency = 1
             t.TextXAlignment = Left
@@ -125,14 +125,15 @@ function LumaUI:CreateWindow(cfg)
 
         function tab:CreateButton(o)
             local b = Instance.new("TextButton")
-            b.Size = UDim2.new(1, 0, 0, 42)
+            b.Size = UDim2.new(1,0,0,42)
             b.BackgroundColor3 = Color3.fromRGB(32,32,32)
             b.Text = o.Name
             b.Font = Enum.Font.Gotham
             b.TextSize = 14
             b.TextColor3 = Color3.fromRGB(230,230,230)
             b.Parent = page
-            createCorner(10, b)
+            corner(10,b)
+
             b.MouseButton1Click:Connect(function()
                 if o.Callback then o.Callback() end
             end)
@@ -140,13 +141,13 @@ function LumaUI:CreateWindow(cfg)
 
         function tab:CreateSlider(o)
             local f = Instance.new("Frame")
-            f.Size = UDim2.new(1, 0, 0, 56)
+            f.Size = UDim2.new(1,0,0,56)
             f.BackgroundColor3 = Color3.fromRGB(32,32,32)
             f.Parent = page
-            createCorner(10, f)
+            corner(10,f)
 
             local l = Instance.new("TextLabel")
-            l.Size = UDim2.new(1, -16, 0, 28)
+            l.Size = UDim2.new(1,-20,0,28)
             l.Position = UDim2.fromOffset(16,0)
             l.BackgroundTransparency = 1
             l.TextXAlignment = Left
@@ -157,23 +158,23 @@ function LumaUI:CreateWindow(cfg)
             l.Parent = f
 
             local bar = Instance.new("Frame")
-            bar.Size = UDim2.new(1, -32, 0, 6)
+            bar.Size = UDim2.new(1,-32,0,6)
             bar.Position = UDim2.fromOffset(16,36)
             bar.BackgroundColor3 = Color3.fromRGB(45,45,45)
             bar.Parent = f
-            createCorner(6, bar)
+            corner(6,bar)
 
             local fill = Instance.new("Frame")
-            fill.Size = UDim2.new(0,0,1,0)
             fill.BackgroundColor3 = Color3.fromRGB(118,255,123)
+            fill.Size = UDim2.new(0,0,1,0)
             fill.Parent = bar
-            createCorner(6, fill)
+            corner(6,fill)
 
             local min,max = o.Min or 0, o.Max or 100
             local val = o.Default or min
 
-            local function set(x)
-                val = math.clamp(x, min, max)
+            local function set(v)
+                val = math.clamp(v,min,max)
                 fill.Size = UDim2.new((val-min)/(max-min),0,1,0)
                 if o.Callback then o.Callback(val) end
             end
@@ -186,7 +187,7 @@ function LumaUI:CreateWindow(cfg)
                     c = UserInputService.InputChanged:Connect(function(m)
                         if m.UserInputType == Enum.UserInputType.MouseMovement then
                             local p = math.clamp((m.Position.X-bar.AbsolutePosition.X)/bar.AbsoluteSize.X,0,1)
-                            set(min+(max-min)*p)
+                            set(min + (max-min)*p)
                         end
                     end)
                     UserInputService.InputEnded:Once(function()
