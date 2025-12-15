@@ -1,60 +1,69 @@
+-- LumaUI - Full Rayfield-style UI Library
+-- Single Lua file, fully functional
+
 local LumaUI = {}
 
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
-local function corner(r,p)
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0,r)
-    c.Parent = p
+local function CreateCorner(radius, parent)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, radius)
+    corner.Parent = parent
+end
+
+local function CreateUIListLayout(parent, padding)
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, padding or 6)
+    layout.Parent = parent
+    return layout
 end
 
 function LumaUI:CreateWindow(cfg)
     local gui = Instance.new("ScreenGui")
     gui.Name = "LumaUI"
+    gui.ResetOnSpawn = false
     gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 
     local main = Instance.new("Frame")
-    main.Size = UDim2.fromOffset(520,360)
+    main.Size = UDim2.fromOffset(520, 360)
     main.Position = UDim2.fromScale(0.5,0.5)
     main.AnchorPoint = Vector2.new(0.5,0.5)
-    main.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    main.BackgroundColor3 = Color3.fromRGB(24,24,24)
     main.Parent = gui
-    corner(12,main)
+    CreateCorner(12, main)
 
     local top = Instance.new("Frame")
-    top.Size = UDim2.new(1,0,0,44)
+    top.Size = UDim2.new(1,0,0,42)
     top.BackgroundColor3 = Color3.fromRGB(30,30,30)
     top.Parent = main
-    corner(12,top)
+    CreateCorner(12, top)
 
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1,-20,1,0)
-    title.Position = UDim2.fromOffset(20,0)
+    title.Size = UDim2.new(1,-16,1,0)
+    title.Position = UDim2.fromOffset(16,0)
     title.BackgroundTransparency = 1
-    title.TextXAlignment = Left
+    title.TextXAlignment = Enum.TextXAlignment.Left
     title.Text = cfg.Title or "LumaUI"
+    title.TextSize = 20
     title.Font = Enum.Font.GothamBold
-    title.TextSize = 18
     title.TextColor3 = Color3.fromRGB(118,255,123)
     title.Parent = top
 
-    local tabs = Instance.new("Frame")
-    tabs.Size = UDim2.new(0,140,1,-44)
-    tabs.Position = UDim2.fromOffset(0,44)
-    tabs.BackgroundColor3 = Color3.fromRGB(20,20,20)
-    tabs.Parent = main
+    local tabsBar = Instance.new("Frame")
+    tabsBar.Size = UDim2.new(0,140,1,-42)
+    tabsBar.Position = UDim2.fromOffset(0,42)
+    tabsBar.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    tabsBar.Parent = main
 
     local pages = Instance.new("Frame")
-    pages.Size = UDim2.new(1,-140,1,-44)
-    pages.Position = UDim2.fromOffset(140,44)
+    pages.Size = UDim2.new(1,-140,1,-42)
+    pages.Position = UDim2.fromOffset(140,42)
     pages.BackgroundTransparency = 1
     pages.Parent = main
 
-    local tabLayout = Instance.new("UIListLayout")
-    tabLayout.Padding = UDim.new(0,6)
-    tabLayout.Parent = tabs
+    local layout = CreateUIListLayout(tabsBar,6)
 
     local window = {}
 
@@ -66,24 +75,22 @@ function LumaUI:CreateWindow(cfg)
         tabBtn.Text = name
         tabBtn.Font = Enum.Font.Gotham
         tabBtn.TextSize = 14
-        tabBtn.TextColor3 = Color3.fromRGB(230,230,230)
-        tabBtn.Parent = tabs
-        corner(8,tabBtn)
+        tabBtn.TextColor3 = Color3.fromRGB(220,220,220)
+        tabBtn.Parent = tabsBar
+        CreateCorner(8, tabBtn)
 
         local page = Instance.new("ScrollingFrame")
         page.Size = UDim2.new(1,-16,1,-16)
         page.Position = UDim2.fromOffset(8,8)
-        page.ScrollBarImageTransparency = 1
         page.CanvasSize = UDim2.new(0,0,0,0)
+        page.ScrollBarImageTransparency = 1
         page.Visible = false
         page.Parent = pages
 
-        local layout = Instance.new("UIListLayout")
-        layout.Padding = UDim.new(0,8)
-        layout.Parent = page
+        local pLayout = CreateUIListLayout(page,8)
 
-        layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            page.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 10)
+        pLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            page.CanvasSize = UDim2.new(0,0,0,pLayout.AbsoluteContentSize.Y+8)
         end)
 
         tabBtn.MouseButton1Click:Connect(function()
@@ -101,20 +108,20 @@ function LumaUI:CreateWindow(cfg)
             b.BackgroundColor3 = Color3.fromRGB(32,32,32)
             b.Text = ""
             b.Parent = page
-            corner(10,b)
+            CreateCorner(10,b)
 
             local t = Instance.new("TextLabel")
-            t.Size = UDim2.new(1,-20,1,0)
+            t.Size = UDim2.new(1,-60,1,0)
             t.Position = UDim2.fromOffset(16,0)
             t.BackgroundTransparency = 1
-            t.TextXAlignment = Left
+            t.TextXAlignment = Enum.TextXAlignment.Left
             t.Text = o.Name
             t.Font = Enum.Font.Gotham
             t.TextSize = 14
             t.TextColor3 = Color3.fromRGB(230,230,230)
             t.Parent = b
 
-            local state = o.Default or false
+            local state = o.CurrentValue or false
 
             b.MouseButton1Click:Connect(function()
                 state = not state
@@ -132,7 +139,7 @@ function LumaUI:CreateWindow(cfg)
             b.TextSize = 14
             b.TextColor3 = Color3.fromRGB(230,230,230)
             b.Parent = page
-            corner(10,b)
+            CreateCorner(10,b)
 
             b.MouseButton1Click:Connect(function()
                 if o.Callback then o.Callback() end
@@ -144,13 +151,13 @@ function LumaUI:CreateWindow(cfg)
             f.Size = UDim2.new(1,0,0,56)
             f.BackgroundColor3 = Color3.fromRGB(32,32,32)
             f.Parent = page
-            corner(10,f)
+            CreateCorner(10,f)
 
             local l = Instance.new("TextLabel")
-            l.Size = UDim2.new(1,-20,0,28)
+            l.Size = UDim2.new(1,-16,0,28)
             l.Position = UDim2.fromOffset(16,0)
             l.BackgroundTransparency = 1
-            l.TextXAlignment = Left
+            l.TextXAlignment = Enum.TextXAlignment.Left
             l.Text = o.Name
             l.Font = Enum.Font.Gotham
             l.TextSize = 14
@@ -162,19 +169,19 @@ function LumaUI:CreateWindow(cfg)
             bar.Position = UDim2.fromOffset(16,36)
             bar.BackgroundColor3 = Color3.fromRGB(45,45,45)
             bar.Parent = f
-            corner(6,bar)
+            CreateCorner(6,bar)
 
             local fill = Instance.new("Frame")
-            fill.BackgroundColor3 = Color3.fromRGB(118,255,123)
             fill.Size = UDim2.new(0,0,1,0)
+            fill.BackgroundColor3 = Color3.fromRGB(118,255,123)
             fill.Parent = bar
-            corner(6,fill)
+            CreateCorner(6,fill)
 
-            local min,max = o.Min or 0, o.Max or 100
-            local val = o.Default or min
+            local min,max = o.Range and o.Range[1] or 0, o.Range and o.Range[2] or 100
+            local val = o.CurrentValue or min
 
-            local function set(v)
-                val = math.clamp(v,min,max)
+            local function set(x)
+                val = math.clamp(x,min,max)
                 fill.Size = UDim2.new((val-min)/(max-min),0,1,0)
                 if o.Callback then o.Callback(val) end
             end
@@ -190,9 +197,10 @@ function LumaUI:CreateWindow(cfg)
                             set(min + (max-min)*p)
                         end
                     end)
-                    UserInputService.InputEnded:Once(function()
+                    local function disconnect()
                         if c then c:Disconnect() end
-                    end)
+                    end
+                    UserInputService.InputEnded:Once(disconnect)
                 end
             end)
         end
