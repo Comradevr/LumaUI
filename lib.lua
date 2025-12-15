@@ -113,6 +113,7 @@ function LumaUI:CreateWindow(settings)
             box.TextColor3 = Color3.fromRGB(255, 255, 255)
             box.Font = Enum.Font.SourceSans
             box.TextSize = 18
+            box.PlaceholderText = args.Placeholder or ""
             box.Parent = tab.Container
 
             box.FocusLost:Connect(function(enter)
@@ -120,7 +121,53 @@ function LumaUI:CreateWindow(settings)
             end)
         end
 
-        tabs[name] = tab
+        function tab:CreateColorPicker(args)
+            local frame = Instance.new("Frame")
+            frame.Size = UDim2.new(0, 200, 0, 30)
+            frame.BackgroundColor3 = args.Default or Color3.fromRGB(118, 255, 123)
+            frame.Parent = tab.Container
+
+            local button = Instance.new("TextButton")
+            button.Size = UDim2.new(1, 0, 1, 0)
+            button.Text = args.Name or "Color"
+            button.TextColor3 = Color3.fromRGB(255, 255, 255)
+            button.Font = Enum.Font.SourceSans
+            button.TextSize = 18
+            button.BackgroundTransparency = 1
+            button.Parent = frame
+
+            button.MouseButton1Click:Connect(function()
+                if args.Callback then args.Callback(frame.BackgroundColor3) end
+            end)
+        end
+
+        function tab:CreateNotification(args)
+            local notif = Instance.new("Frame")
+            notif.Size = UDim2.new(0, 250, 0, 50)
+            notif.Position = UDim2.new(0.5, -125, 0.1, 0)
+            notif.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            notif.BorderSizePixel = 0
+            notif.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+
+            local text = Instance.new("TextLabel")
+            text.Size = UDim2.new(1, 0, 1, 0)
+            text.BackgroundTransparency = 1
+            text.TextColor3 = Color3.fromRGB(118, 255, 123)
+            text.Font = Enum.Font.SourceSansBold
+            text.TextSize = 18
+            text.Text = args.Text or "Notification"
+            text.Parent = notif
+
+            local tween = TweenService:Create(notif, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {Position = UDim2.new(0.5, -125, 0.15, 0)})
+            tween:Play()
+
+            delay(args.Duration or 2, function()
+                local outTween = TweenService:Create(notif, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {Position = UDim2.new(0.5, -125, 0.05, 0)})
+                outTween:Play()
+                outTween.Completed:Connect(function() notif:Destroy() end)
+            end)
+        end
+
         return tab
     end
 
