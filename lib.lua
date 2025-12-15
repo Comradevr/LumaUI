@@ -1,214 +1,195 @@
--- LumaUI - Full Rayfield-style UI Library
--- Single Lua file, fully functional
-
 local LumaUI = {}
+LumaUI.__index = LumaUI
 
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-local function CreateCorner(radius, parent)
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, radius)
-    corner.Parent = parent
-end
+function LumaUI:CreateWindow(config)
+    local Window = {}
+    Window.Tabs = {}
+    Window.Notifications = {}
+    Window.Title = config.Title or "LumaUI"
+    Window.Theme = config.Theme or { Background = Color3.fromRGB(18,18,18), Accent = Color3.fromRGB(48,255,106) }
 
-local function CreateUIListLayout(parent, padding)
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, padding or 6)
-    layout.Parent = parent
-    return layout
-end
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "LumaUI"
+    ScreenGui.Parent = game:GetService("CoreGui")
 
-function LumaUI:CreateWindow(cfg)
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "LumaUI"
-    gui.ResetOnSpawn = false
-    gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 400, 0, 500)
+    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
+    MainFrame.BackgroundColor3 = Window.Theme.Background
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
+    Window.MainFrame = MainFrame
 
-    local main = Instance.new("Frame")
-    main.Size = UDim2.fromOffset(520, 360)
-    main.Position = UDim2.fromScale(0.5,0.5)
-    main.AnchorPoint = Vector2.new(0.5,0.5)
-    main.BackgroundColor3 = Color3.fromRGB(24,24,24)
-    main.Parent = gui
-    CreateCorner(12, main)
+    local Sidebar = Instance.new("Frame")
+    Sidebar.Size = UDim2.new(0, 100, 1, 0)
+    Sidebar.BackgroundColor3 = Color3.fromRGB(24,24,24)
+    Sidebar.BorderSizePixel = 0
+    Sidebar.Parent = MainFrame
+    Window.Sidebar = Sidebar
 
-    local top = Instance.new("Frame")
-    top.Size = UDim2.new(1,0,0,42)
-    top.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    top.Parent = main
-    CreateCorner(12, top)
+    local TabContainer = Instance.new("Frame")
+    TabContainer.Size = UDim2.new(1, -100, 1, 0)
+    TabContainer.Position = UDim2.new(0, 100, 0, 0)
+    TabContainer.BackgroundTransparency = 1
+    TabContainer.Parent = MainFrame
+    Window.TabContainer = TabContainer
 
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1,-16,1,0)
-    title.Position = UDim2.fromOffset(16,0)
-    title.BackgroundTransparency = 1
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Text = cfg.Title or "LumaUI"
-    title.TextSize = 20
-    title.Font = Enum.Font.GothamBold
-    title.TextColor3 = Color3.fromRGB(118,255,123)
-    title.Parent = top
+    function Window:CreateTab(tabName)
+        local Tab = {}
+        Tab.Sections = {}
 
-    local tabsBar = Instance.new("Frame")
-    tabsBar.Size = UDim2.new(0,140,1,-42)
-    tabsBar.Position = UDim2.fromOffset(0,42)
-    tabsBar.BackgroundColor3 = Color3.fromRGB(20,20,20)
-    tabsBar.Parent = main
+        local TabButton = Instance.new("TextButton")
+        TabButton.Size = UDim2.new(1, 0, 0, 50)
+        TabButton.Text = tabName
+        TabButton.Font = Enum.Font.GothamBold
+        TabButton.TextSize = 18
+        TabButton.TextColor3 = Color3.fromRGB(255,255,255)
+        TabButton.BackgroundColor3 = Color3.fromRGB(30,30,30)
+        TabButton.Parent = Sidebar
 
-    local pages = Instance.new("Frame")
-    pages.Size = UDim2.new(1,-140,1,-42)
-    pages.Position = UDim2.fromOffset(140,42)
-    pages.BackgroundTransparency = 1
-    pages.Parent = main
+        local SectionContainer = Instance.new("ScrollingFrame")
+        SectionContainer.Size = UDim2.new(1, 0, 1, 0)
+        SectionContainer.BackgroundTransparency = 1
+        SectionContainer.CanvasSize = UDim2.new(0,0,1,0)
+        SectionContainer.ScrollBarThickness = 6
+        SectionContainer.Parent = TabContainer
+        SectionContainer.Visible = false
+        Tab.Container = SectionContainer
 
-    local layout = CreateUIListLayout(tabsBar,6)
-
-    local window = {}
-
-    function window:CreateTab(name)
-        local tabBtn = Instance.new("TextButton")
-        tabBtn.Size = UDim2.new(1,-12,0,36)
-        tabBtn.Position = UDim2.fromOffset(6,0)
-        tabBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
-        tabBtn.Text = name
-        tabBtn.Font = Enum.Font.Gotham
-        tabBtn.TextSize = 14
-        tabBtn.TextColor3 = Color3.fromRGB(220,220,220)
-        tabBtn.Parent = tabsBar
-        CreateCorner(8, tabBtn)
-
-        local page = Instance.new("ScrollingFrame")
-        page.Size = UDim2.new(1,-16,1,-16)
-        page.Position = UDim2.fromOffset(8,8)
-        page.CanvasSize = UDim2.new(0,0,0,0)
-        page.ScrollBarImageTransparency = 1
-        page.Visible = false
-        page.Parent = pages
-
-        local pLayout = CreateUIListLayout(page,8)
-
-        pLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            page.CanvasSize = UDim2.new(0,0,0,pLayout.AbsoluteContentSize.Y+8)
+        TabButton.MouseButton1Click:Connect(function()
+            for _,t in pairs(Window.Tabs) do
+                t.Container.Visible = false
+            end
+            Tab.Container.Visible = true
         end)
 
-        tabBtn.MouseButton1Click:Connect(function()
-            for _,v in pairs(pages:GetChildren()) do
-                if v:IsA("ScrollingFrame") then v.Visible = false end
-            end
-            page.Visible = true
-        end)
+        function Tab:CreateSection(sectionName)
+            local Section = {}
 
-        local tab = {}
+            local Frame = Instance.new("Frame")
+            Frame.Size = UDim2.new(1, -20, 0, 50)
+            Frame.BackgroundColor3 = Color3.fromRGB(28,28,28)
+            Frame.Position = UDim2.new(0, 10, 0, #self.Sections * 60)
+            Frame.Parent = SectionContainer
 
-        function tab:CreateToggle(o)
-            local b = Instance.new("TextButton")
-            b.Size = UDim2.new(1,0,0,42)
-            b.BackgroundColor3 = Color3.fromRGB(32,32,32)
-            b.Text = ""
-            b.Parent = page
-            CreateCorner(10,b)
+            local Label = Instance.new("TextLabel")
+            Label.Text = sectionName
+            Label.Font = Enum.Font.GothamBold
+            Label.TextSize = 16
+            Label.TextColor3 = Color3.fromRGB(255,255,255)
+            Label.BackgroundTransparency = 1
+            Label.Size = UDim2.new(1,0,0,20)
+            Label.Parent = Frame
 
-            local t = Instance.new("TextLabel")
-            t.Size = UDim2.new(1,-60,1,0)
-            t.Position = UDim2.fromOffset(16,0)
-            t.BackgroundTransparency = 1
-            t.TextXAlignment = Enum.TextXAlignment.Left
-            t.Text = o.Name
-            t.Font = Enum.Font.Gotham
-            t.TextSize = 14
-            t.TextColor3 = Color3.fromRGB(230,230,230)
-            t.Parent = b
+            Section.Frame = Frame
 
-            local state = o.CurrentValue or false
-
-            b.MouseButton1Click:Connect(function()
-                state = not state
-                b.BackgroundColor3 = state and Color3.fromRGB(118,255,123) or Color3.fromRGB(32,32,32)
-                if o.Callback then o.Callback(state) end
-            end)
-        end
-
-        function tab:CreateButton(o)
-            local b = Instance.new("TextButton")
-            b.Size = UDim2.new(1,0,0,42)
-            b.BackgroundColor3 = Color3.fromRGB(32,32,32)
-            b.Text = o.Name
-            b.Font = Enum.Font.Gotham
-            b.TextSize = 14
-            b.TextColor3 = Color3.fromRGB(230,230,230)
-            b.Parent = page
-            CreateCorner(10,b)
-
-            b.MouseButton1Click:Connect(function()
-                if o.Callback then o.Callback() end
-            end)
-        end
-
-        function tab:CreateSlider(o)
-            local f = Instance.new("Frame")
-            f.Size = UDim2.new(1,0,0,56)
-            f.BackgroundColor3 = Color3.fromRGB(32,32,32)
-            f.Parent = page
-            CreateCorner(10,f)
-
-            local l = Instance.new("TextLabel")
-            l.Size = UDim2.new(1,-16,0,28)
-            l.Position = UDim2.fromOffset(16,0)
-            l.BackgroundTransparency = 1
-            l.TextXAlignment = Enum.TextXAlignment.Left
-            l.Text = o.Name
-            l.Font = Enum.Font.Gotham
-            l.TextSize = 14
-            l.TextColor3 = Color3.fromRGB(230,230,230)
-            l.Parent = f
-
-            local bar = Instance.new("Frame")
-            bar.Size = UDim2.new(1,-32,0,6)
-            bar.Position = UDim2.fromOffset(16,36)
-            bar.BackgroundColor3 = Color3.fromRGB(45,45,45)
-            bar.Parent = f
-            CreateCorner(6,bar)
-
-            local fill = Instance.new("Frame")
-            fill.Size = UDim2.new(0,0,1,0)
-            fill.BackgroundColor3 = Color3.fromRGB(118,255,123)
-            fill.Parent = bar
-            CreateCorner(6,fill)
-
-            local min,max = o.Range and o.Range[1] or 0, o.Range and o.Range[2] or 100
-            local val = o.CurrentValue or min
-
-            local function set(x)
-                val = math.clamp(x,min,max)
-                fill.Size = UDim2.new((val-min)/(max-min),0,1,0)
-                if o.Callback then o.Callback(val) end
-            end
-
-            set(val)
-
-            bar.InputBegan:Connect(function(i)
-                if i.UserInputType == Enum.UserInputType.MouseButton1 then
-                    local c
-                    c = UserInputService.InputChanged:Connect(function(m)
-                        if m.UserInputType == Enum.UserInputType.MouseMovement then
-                            local p = math.clamp((m.Position.X-bar.AbsolutePosition.X)/bar.AbsoluteSize.X,0,1)
-                            set(min + (max-min)*p)
-                        end
-                    end)
-                    local function disconnect()
-                        if c then c:Disconnect() end
-                    end
-                    UserInputService.InputEnded:Once(disconnect)
+            function Section:CreateButton(data)
+                local Btn = Instance.new("TextButton")
+                Btn.Size = UDim2.new(1, -10, 0, 25)
+                Btn.Position = UDim2.new(0,5,#Frame:GetChildren()*30)
+                Btn.BackgroundColor3 = Window.Theme.Accent
+                Btn.Text = data.Name or "Button"
+                Btn.TextColor3 = Color3.fromRGB(0,0,0)
+                Btn.Font = Enum.Font.GothamBold
+                Btn.TextSize = 14
+                Btn.Parent = Frame
+                if data.Callback then
+                    Btn.MouseButton1Click:Connect(data.Callback)
                 end
-            end)
+            end
+
+            function Section:CreateToggle(data)
+                local Toggle = Instance.new("TextButton")
+                Toggle.Size = UDim2.new(1, -10, 0, 25)
+                Toggle.Position = UDim2.new(0,5,#Frame:GetChildren()*30)
+                Toggle.BackgroundColor3 = Color3.fromRGB(50,50,50)
+                Toggle.TextColor3 = Color3.fromRGB(255,255,255)
+                Toggle.Font = Enum.Font.GothamBold
+                Toggle.TextSize = 14
+                Toggle.Text = data.Name.." [OFF]"
+                Toggle.Parent = Frame
+                local state = data.CurrentValue or false
+                Toggle.MouseButton1Click:Connect(function()
+                    state = not state
+                    Toggle.Text = data.Name.." ["..(state and "ON" or "OFF").."]"
+                    if data.Callback then data.Callback(state) end
+                end)
+            end
+
+            function Section:CreateSlider(data)
+                local SliderFrame = Instance.new("Frame")
+                SliderFrame.Size = UDim2.new(1, -10, 0, 25)
+                SliderFrame.Position = UDim2.new(0,5,#Frame:GetChildren()*30)
+                SliderFrame.BackgroundColor3 = Color3.fromRGB(50,50,50)
+                SliderFrame.Parent = Frame
+
+                local Slider = Instance.new("TextLabel")
+                Slider.Text = data.Name.." "..(data.CurrentValue or 0)
+                Slider.Font = Enum.Font.GothamBold
+                Slider.TextSize = 14
+                Slider.TextColor3 = Color3.fromRGB(255,255,255)
+                Slider.BackgroundTransparency = 1
+                Slider.Size = UDim2.new(1,0,1,0)
+                Slider.Parent = SliderFrame
+
+                local dragging = false
+                SliderFrame.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging = true
+                    end
+                end)
+                SliderFrame.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging = false
+                    end
+                end)
+                UserInputService.InputChanged:Connect(function(input)
+                    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                        local mouseX = math.clamp(input.Position.X - SliderFrame.AbsolutePosition.X, 0, SliderFrame.AbsoluteSize.X)
+                        local percent = mouseX/SliderFrame.AbsoluteSize.X
+                        local value = math.floor(data.Range[1] + (data.Range[2]-data.Range[1])*percent)
+                        Slider.Text = data.Name.." "..value
+                        if data.Callback then data.Callback(value) end
+                    end
+                end)
+            end
+
+            table.insert(self.Sections, Section)
+            return Section
         end
 
-        return tab
+        table.insert(Window.Tabs, Tab)
+        return Tab
     end
 
-    return window
+    function Window:Notify(data)
+        local notif = Instance.new("Frame")
+        notif.Size = UDim2.new(0,200,0,50)
+        notif.Position = UDim2.new(1,-210,0,10 + #self.Notifications*60)
+        notif.BackgroundColor3 = Color3.fromRGB(30,30,30)
+        notif.Parent = ScreenGui
+
+        local Text = Instance.new("TextLabel")
+        Text.Text = data.Title.."\n"..data.Content
+        Text.TextColor3 = Color3.fromRGB(255,255,255)
+        Text.TextSize = 14
+        Text.Font = Enum.Font.GothamBold
+        Text.BackgroundTransparency = 1
+        Text.Size = UDim2.new(1,0,1,0)
+        Text.Parent = notif
+
+        table.insert(self.Notifications, notif)
+        task.delay(data.Duration or 3, function()
+            notif:Destroy()
+        end)
+    end
+
+    return Window
 end
 
 return LumaUI
